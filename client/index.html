@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moonshot Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Moonshot Dashboard</h1>
+        <div class="dashboard">
+            <div class="video-container">
+                <div id="video">Video Placeholder</div>
+                <p>FPS: <span id="fps"></span> | Delay: <span id="delay"></span></p>
+                <p>Detected Objects: Human: <span id="human-count"></span>, Tree: <span id="tree-count"></span></p>
+            </div>
+            <div class="data-container">
+                <div class="sensor-data">
+                    <h3>Temperature Sensor 1</h3>
+                    <div class="chart" id="temp-chart1"></div>
+                    <p>Real Time: <span id="temp1">20.5°C</span></p>
+                    <p>Average: <span id="avg-temp1">18.1°C</span></p>
+                </div>
+                <div class="sensor-data">
+                    <h3>Temperature Sensor 2</h3>
+                    <div class="chart" id="temp-chart2"></div>
+                    <p>Real Time: <span id="temp2">20.5°C</span></p>
+                    <p>Average: <span id="avg-temp2">18.1°C</span></p>
+                </div>
+                <div class="sensor-data">
+                    <h3>Humidity Sensor</h3>
+                    <div class="chart" id="humidity-chart"></div>
+                    <p>Real Time: <span id="humidity">45%</span></p>
+                    <p>Average: <span id="avg-humidity">42%</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="http://localhost:8765/socket.io/socket.io.js"></script>
+    <script>
+        console.log("Attempting to connect to server...");
+
+        const socket = io('http://localhost:8765');
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('sensor_data', (data) => {
+            console.log('Sensor Data:', data);
+            const parsedData = parseSensorData(data);
+            updateDOM(parsedData);
+        });
+
+        function parseSensorData(data) {
+            const regex = /Humidity: (\d+\.\d+)% Temperature: (\d+\.\d+)°C (\d+\.\d+)°F Heat index: (\d+\.\d+)°C (\d+\.\d+)°F/;
+            const matches = data.match(regex);
+            if (matches) {
+                return {
+                    humidity: matches[1],
+                    temperatureC: matches[2],
+                    temperatureF: matches[3],
+                    heatIndexC: matches[4],
+                    heatIndexF: matches[5]
+                };
+            }
+            return null;
+        }
+
+        function updateDOM(data) {
+            if (data) {
+                document.getElementById('temp1').textContent = `${data.temperatureC}°C`;
+                document.getElementById('humidity').textContent = `${data.humidity}%`;
+            }
+        }
+
+        window.onload = function () {
+            console.log("Window loaded");
+        };
+    </script>
+</body>
+</html>
