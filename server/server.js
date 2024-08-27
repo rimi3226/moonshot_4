@@ -1,36 +1,26 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-
+const express = require('express')
+const path = require('path')
+const Stream = require('node-rtsp-stream');
+const socketIoClient = require('socket.io-client');
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: ['http://localhost:3000'],
-        methods: ['GET', 'POST']
+
+app.use(express.static(path.join(__dirname)));
+
+app.get('/',(req,res)=>{
+	res.sendFile(path.join(__dirname,'index.html'));
+});
+
+const stream = new Stream({
+    name: 'cam1',
+    streamUrl: 'rtsp://localhost:8554/cam1', // Replace with your RTSP stream URL
+    wsPort: 9999,
+    ffmpegOptions: { // options ffmpeg flags
+        '-stats': '', // an option with no neccessary value uses a blank string
+        '-r': 30 // options with required values specify the value after the key
     }
 });
 
-const PORT = 8765;
-
-app.use(cors());
-app.use(express.static('public'));
-
-io.on('connection', (socket) => {
-    console.log("New connection: ", socket.id);
-
-    // Example of emitting sensor data for testing purposes
-    setInterval(() => {
-        const sensorData = 'Humidity: 84.00% Temperature: 27.10°C 80.78°F Heat index: 30.37°C 86.67°F';
-        socket.emit('sensor_data', sensorData);
-    }, 5000);
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected: ', socket.id);
-    });
-});
-
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+const PORT = 3000;
+app.listen(PORT, ()=>{
+	console.log('Server is running');
 });
