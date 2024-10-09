@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,13 @@
     <link rel="stylesheet" href="/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/jsmpeg-master/jsmpeg.min.js"></script>
+    <script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=faeeb7f2c5c905ecea744c389e4aaeb4"></script>
 
     <style>
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Moonshot Dashboard</h1>
@@ -18,6 +22,12 @@
             <div class="video-container">
                 <div id="video">
                     <canvas id="videoCanvas"></canvas>
+                    <div id="map-overlay">
+                        <div id="map" style="width:400px;height:300px; "></div>
+
+
+                    </div>
+
                 </div>
                 <p>FPS: 30 <span id="fps"></span>
             </div>
@@ -28,7 +38,7 @@
                     <p>Real Time: <span id="temp1">20.5°C</span></p>
                     <p>Average: <span id="avg-temp1">18.1°C</span></p>
                 </div>
-                <div class="sensor-data"  >
+                <div class="sensor-data">
                     <h3>Humidity Sensor</h3>
                     <canvas id="humidity-chart"></canvas>
                     <p>Real Time: <span id="humidity">45%</span></p>
@@ -46,7 +56,26 @@
         const maxDataPoints = 10;
         const temperatureData = [];
         const humidityData = [];
-       
+
+        var container = document.getElementById('map');
+        var options = {
+            center: new kakao.maps.LatLng(33.450701, 126.570667),
+            level: 3
+        };
+
+        var map = new kakao.maps.Map(container, options);
+
+        // 마커가 표시될 위치입니다 
+        var markerPosition = new kakao.maps.LatLng(33.450701, 126.570667);
+
+        // 마커를 생성합니다
+        var marker = new kakao.maps.Marker({
+            position: markerPosition
+        });
+
+        // 마커가 지도 위에 표시되도록 설정합니다
+        marker.setMap(map);
+
         socket.on('connect', () => {
             console.log('Connected to server');
         });
@@ -86,18 +115,18 @@
                 const now = new Date();
                 const timeString = now.toLocaleTimeString();
 
-                temperatureData.push({x: timeString, y: data.temperatureC});
-                humidityData.push({x: timeString, y: data.humidity});
+                temperatureData.push({ x: timeString, y: data.temperatureC });
+                humidityData.push({ x: timeString, y: data.humidity });
 
                 if (temperatureData.length > maxDataPoints) {
                     temperatureData.shift();
                 }
-               
+
                 if (humidityData.length > maxDataPoints) {
                     humidityData.shift();
                 }
-               
-                requestAnimationFrame(()=>{
+
+                requestAnimationFrame(() => {
                     temperatureChart.update();
                     humidityChart.update();
                 })
@@ -117,8 +146,8 @@
                 },
                 options: {
                     responsive: true,
-                    animation:{
-                        duration:10
+                    animation: {
+                        duration: 10
                     },
                     scales: {
                         x: {
@@ -128,8 +157,8 @@
                                 text: 'Time'
                             },
                             ticks: {
-                                autoSkip:false,
-                                padding:3
+                                autoSkip: false,
+                                padding: 3
                             }
                         },
                         y: {
@@ -138,7 +167,7 @@
                                 text: 'Temperature (°C)'
                             },
                             ticks: {
-                                autoSkip:false
+                                autoSkip: false
                             }
                         }
                     }
@@ -157,8 +186,8 @@
                 },
                 options: {
                     responsive: true,
-                    animation:{
-                        duration:0
+                    animation: {
+                        duration: 0
                     },
                     scales: {
                         x: {
@@ -167,7 +196,7 @@
                                 display: true,
                                 text: 'Time'
                             },
-                           
+
                         },
                         y: {
                             title: {
@@ -176,55 +205,58 @@
                             }
                         }
                     }
-                   
+
                 }
             });
-           
+
             const now = new Date();
             const timeString = now.toLocaleTimeString();
 
-            for(let i=0;i<10;i++){
-                temperatureData.push({x: timeString, y:0});
-                humidityData.push({x: timeString, y:0});
-           
-                requestAnimationFrame(()=>{
-                        temperatureChart.update();
-                        humidityChart.update();
+            for (let i = 0; i < 10; i++) {
+                temperatureData.push({ x: timeString, y: 0 });
+                humidityData.push({ x: timeString, y: 0 });
+
+                requestAnimationFrame(() => {
+                    temperatureChart.update();
+                    humidityChart.update();
                 })
-           }    
-           
-           
+            }
+
+
 
         }
 
         window.onload = function () {
             console.log("Window loaded");
             createCharts();
-           
-           
+
+
             // yolo Video Stream
             const url = 'ws://localhost:9999';
             const canvas = document.getElementById('videoCanvas');
-           
+
             const player = new JSMpeg.Player(url, {
                 canvas: canvas,
                 audioBufferSize: 0,
                 progressive: true
-               
-                 
+
+
             });
 
             // WebSocket connection status check
-            player.on('connect', function() {
+            player.on('connect', function () {
                 console.log('WebSocket connected');
             });
 
-            player.on('disconnect', function() {
+            player.on('disconnect', function () {
                 console.log('WebSocket disconnected');
             });
-           
+
         }
-   
+
+
+
     </script>
 </body>
+
 </html>
