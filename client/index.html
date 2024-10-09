@@ -11,7 +11,6 @@
     <style>
         canvas {
             width: 100% !important;
-            height: 200px !important;
         }
     </style>
 </head>
@@ -20,30 +19,22 @@
         <h1>Moonshot Dashboard</h1>
         <div class="dashboard">
             <div class="video-container">
-                <div id="video">Video Placeholder
-                    <canvas id="videoCanvas" style="width: 100%; height: auto;"></canvas>
+                <div id="video">
+                    <canvas id="videoCanvas" style="height:870px"></canvas>
                 </div>
-                <p>FPS: <span id="fps"></span> | Delay: <span id="delay"></span></p>
-                <p>Detected Objects: Human: <span id="human-count"></span>, Tree: <span id="tree-count"></span></p>
+                <p>FPS: 30 <span id="fps"></span>
             </div>
             <div class="data-container">
                 <div class="sensor-data">
                     <h3>Temperature Sensor 1</h3>
-                    <canvas id="temp-chart1"></canvas>
+                    <canvas id="temp-chart1" style="height: 300px"></canvas>
                     <p>Real Time: <span id="temp1">20.5°C</span></p>
                     <p>Average: <span id="avg-temp1">18.1°C</span></p>
                 </div>
-  <!--              
-                <div class="sensor-data">
-                    <h3>Temperature Sensor 2</h3>
-                    <canvas id="temp-chart2"></canvas>
-                    <p>Real Time: <span id="temp2">20.5°C</span></p>
-                    <p>Average: <span id="avg-temp2">18.1°C</span></p>
-                </div>
-                -->
-                <div class="sensor-data">
+                <p></p>
+                <div class="sensor-data"  >
                     <h3>Humidity Sensor</h3>
-                    <canvas id="humidity-chart"></canvas>
+                    <canvas id="humidity-chart" style="height: 300px"></canvas>
                     <p>Real Time: <span id="humidity">45%</span></p>
                     <p>Average: <span id="avg-humidity">42%</span></p>
                 </div>
@@ -56,10 +47,10 @@
 
         const socket = io('http://localhost:8765');
         let temperatureChart, humidityChart;
-        const maxDataPoints = 20;
+        const maxDataPoints = 10;
         const temperatureData = [];
         const humidityData = [];
-
+       
         socket.on('connect', () => {
             console.log('Connected to server');
         });
@@ -105,12 +96,15 @@
                 if (temperatureData.length > maxDataPoints) {
                     temperatureData.shift();
                 }
+               
                 if (humidityData.length > maxDataPoints) {
                     humidityData.shift();
                 }
-
-                temperatureChart.update();
-                humidityChart.update();
+               
+                requestAnimationFrame(()=>{
+                    temperatureChart.update();
+                    humidityChart.update();
+                })
             }
         }
 
@@ -123,23 +117,32 @@
                         label: 'Temperature (°C)',
                         data: temperatureData,
                         borderColor: 'rgb(255, 99, 132)',
-                        tension: 0.1
                     }]
                 },
                 options: {
                     responsive: true,
+                    animation:{
+                        duration:10
+                    },
                     scales: {
                         x: {
                             type: 'category',
                             title: {
                                 display: true,
                                 text: 'Time'
+                            },
+                            ticks: {
+                                autoSkip:false,
+                                padding:3
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Temperature (°C)'
+                            },
+                            ticks: {
+                                autoSkip:false
                             }
                         }
                     }
@@ -154,18 +157,21 @@
                         label: 'Humidity (%)',
                         data: humidityData,
                         borderColor: 'rgb(54, 162, 235)',
-                        tension: 0.1
                     }]
                 },
                 options: {
                     responsive: true,
+                    animation:{
+                        duration:0
+                    },
                     scales: {
                         x: {
                             type: 'category',
                             title: {
                                 display: true,
                                 text: 'Time'
-                            }
+                            },
+                           
                         },
                         y: {
                             title: {
@@ -174,12 +180,43 @@
                             }
                         }
                     }
+                   
                 }
             });
            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+
+            for(let i=0;i<10;i++){
+                temperatureData.push({x: timeString, y:0});
+                humidityData.push({x: timeString, y:0});
+           
+                requestAnimationFrame(()=>{
+                        temperatureChart.update();
+                        humidityChart.update();
+                })
+           }    
+           
+           
+
+        }
+
+        window.onload = function () {
+            console.log("Window loaded");
+            createCharts();
+           
+           
+            // yolo Video Stream
             const url = 'ws://localhost:9999';
             const canvas = document.getElementById('videoCanvas');
-            const player = new JSMpeg.Player(url, { canvas: canvas });
+           
+            const player = new JSMpeg.Player(url, {
+                canvas: canvas,
+                audioBufferSize: 0,
+                progressive: true
+               
+                 
+            });
 
             // WebSocket connection status check
             player.on('connect', function() {
@@ -189,15 +226,7 @@
             player.on('disconnect', function() {
                 console.log('WebSocket disconnected');
             });
-
-            player.on('data', function() {
-                console.log('Data received');
-            });
-        }
-
-        window.onload = function () {
-            console.log("Window loaded");
-            createCharts();
+           
         }
    
     </script>

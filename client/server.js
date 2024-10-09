@@ -12,11 +12,14 @@ app.get('/',(req,res)=>{
 
 const stream = new Stream({
     name: 'cam1',
-    streamUrl: 'rtsp://localhost:8554/cam1', // Replace with your RTSP stream URL
+    streamUrl: 'rtsp:/localhost:8554/cam1', // Replace with your RTSP stream URL
     wsPort: 9999,
     ffmpegOptions: { // options ffmpeg flags
         '-stats': '', // an option with no neccessary value uses a blank string
-        '-r': 30 // options with required values specify the value after the key
+        '-r': 30, // options with required values specify the value after the key
+        '-tune':'zerolatency',
+        '-preset':'ultrafast',
+        '-x264opts':'no-mbtree:sliced-threads:sync-lookahead=0'
     }
 });
 
@@ -24,3 +27,4 @@ const PORT = 3000;
 app.listen(PORT, ()=>{
 	console.log('Server is running');
 });
+
