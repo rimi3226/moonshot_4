@@ -12,7 +12,7 @@ app.get('/',(req,res)=>{
 
 const stream = new Stream({
     name: 'cam1',
-    streamUrl: 'rtsp:/localhost:8554/cam1', // Replace with your RTSP stream URL
+    streamUrl: 'rtsp:/172.30.1.36:8554/cam1', // Replace with your RTSP stream URL
     wsPort: 9999,
     ffmpegOptions: { // options ffmpeg flags
         '-stats': '', // an option with no neccessary value uses a blank string

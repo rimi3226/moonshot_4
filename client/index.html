@@ -9,9 +9,6 @@
     <script src="js/jsmpeg-master/jsmpeg.min.js"></script>
 
     <style>
-        canvas {
-            width: 100% !important;
-        }
     </style>
 </head>
 <body>
@@ -20,21 +17,20 @@
         <div class="dashboard">
             <div class="video-container">
                 <div id="video">
-                    <canvas id="videoCanvas" style="height:870px"></canvas>
+                    <canvas id="videoCanvas"></canvas>
                 </div>
                 <p>FPS: 30 <span id="fps"></span>
             </div>
             <div class="data-container">
                 <div class="sensor-data">
                     <h3>Temperature Sensor 1</h3>
-                    <canvas id="temp-chart1" style="height: 300px"></canvas>
+                    <canvas id="temp-chart1"></canvas>
                     <p>Real Time: <span id="temp1">20.5°C</span></p>
                     <p>Average: <span id="avg-temp1">18.1°C</span></p>
                 </div>
-                <p></p>
                 <div class="sensor-data"  >
                     <h3>Humidity Sensor</h3>
-                    <canvas id="humidity-chart" style="height: 300px"></canvas>
+                    <canvas id="humidity-chart"></canvas>
                     <p>Real Time: <span id="humidity">45%</span></p>
                     <p>Average: <span id="avg-humidity">42%</span></p>
                 </div>
@@ -45,7 +41,7 @@
     <script>
         console.log("Attempting to connect to server...");
 
-        const socket = io('http://localhost:8765');
+        const socket = io('http://172.30.1.36:8765');
         let temperatureChart, humidityChart;
         const maxDataPoints = 10;
         const temperatureData = [];
